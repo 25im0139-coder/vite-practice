@@ -1,0 +1,101 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ['main']
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          ご提示いただいたすべての指示、ガイドライン、およびルール（特に **GitHub Actionsを使用したデプロイ**, **`vite-practice` リポジトリ名と `/vite-practice/` の `base` 設定の徹底**, **コードブロックの保護**, **1操作ごとの確実な「確認」プロセス**）を完全に理解・把握いたしました！
+
+Sourceを `GitHub Actions` に変更していただいたことを確認いたしました。ばっちりです！
+
+それでは、ViteプロジェクトをGitHub Pagesへ自動ビルド・デプロイするための **GitHub Actions ワークフローファイル** を作成しましょう！
+
+---
+
+### ステップ7：GitHub Actionsの設定（2/3：ワークフローファイルの作成）
+
+#### 1. 何をするのか
+VS Codeで `.github/workflows` というフォルダを作成し、その中に `deploy.yml` という設定ファイルを作成して、自動ビルド・公開用のコードを記述します。
+
+#### 2. なぜするのか
+GitHubへコードを送信（Push）したときに、GitHub Actionsが自動的に `npm run build` を実行して `dist` フォルダ（公開用ファイル）を生成し、GitHub Pagesへデプロイさせるためです。
+
+#### 3. 具体的にどう操作するのか
+1. **VS Code** のエクスプローラー（左側のファイル一覧）を開きます。
+2. 一番上のフォルダ（`vite-practice`）の何もないところを右クリックし、「新しいフォルダ」を作成します。名前を **`.github`**（先頭にドット）とします。
+3. 作成した `.github` フォルダの中に、さらに新しいフォルダを作成し、名前を **`workflows`** とします。
+4. `workflows` フォルダの中に、新しいファイルを作成し、名前を **`deploy.yml`** とします。
+   （全体のパス: `.github/workflows/deploy.yml`）
+5. 作成した `deploy.yml` に、以下のコードをすべてコピー＆ペーストして保存（`Command + S`）してください。
+
+```yaml
+name: Deploy Vite Site to GitHub Pages
+
+on:
+  push:
+    branches: ['main']
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
